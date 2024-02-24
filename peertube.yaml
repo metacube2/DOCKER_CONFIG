@@ -1,0 +1,46 @@
+version: '3.3'
+
+services:
+  peertube:
+    image: chocobozzz/peertube:production-bullseye
+    volumes:
+      - assets:/app/client/dist
+      - ./data:/data
+      - ./config:/config
+    environment:
+      - PEERTUBE_DB_USERNAME=metacube
+      - PEERTUBE_DB_PASSWORD=metacube
+      - PEERTUBE_DB_HOSTNAME=db
+      - PEERTUBE_WEBSERVER_HOSTNAME=peertube.aiscom.ch
+      - PEERTUBE_ADMIN_EMAIL=admin@aiscom.ch
+      - PEERTUBE_ADMIN_PASSWORD=admin_passwort
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "9001:9000"
+      - "1935:1935"
+    restart: unless-stopped
+
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=peertube
+      - POSTGRES_PASSWORD=peertube_passwort
+      - POSTGRES_DB=peertube
+    restart: unless-stopped
+
+  redis:
+    image: redis:6-alpine
+    volumes:
+      - ./redis:/data
+    restart: unless-stopped
+
+volumes:
+  assets:
+
+networks:
+  proxy:
+    external: true
